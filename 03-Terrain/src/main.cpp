@@ -80,8 +80,10 @@ Model modelDartLegoRightLeg;
 // Model animate instance
 // Mayow
 Model mayowModelAnimate;
+Model leonModelAnimate;
 // Terrain model instance
-Terrain terrain(-1, -1, 200, 8, "../Textures/heightmap.png");
+// Terrain terrain(-1, -1, 400, 240, "../Textures/heightmap.png");
+Terrain terrain(-1, -1, 200, 10, "../Textures/custom_heightmap.png");
 
 GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textureLandingPadID;
 GLuint skyboxTextureID;
@@ -112,6 +114,7 @@ glm::mat4 modelMatrixLambo = glm::mat4(1.0);
 glm::mat4 modelMatrixAircraft = glm::mat4(1.0);
 glm::mat4 modelMatrixDart = glm::mat4(1.0f);
 glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
+glm::mat4 modelMatrixLeon = glm::mat4(1.0f);
 
 float rotDartHead = 0.0, rotDartLeftArm = 0.0, rotDartLeftHand = 0.0, rotDartRightArm = 0.0, rotDartRightHand = 0.0, rotDartLeftLeg = 0.0, rotDartRightLeg = 0.0;
 int modelSelected = 0;
@@ -273,6 +276,11 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//Mayow
 	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
+
+	//Leon
+	//leonModelAnimate.loadModel("../models/mayow/personaje2.fbx");
+	leonModelAnimate.loadModel("../models/debbie/deb.fbx");
+	leonModelAnimate.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 3.0, 4.0));
 
@@ -507,6 +515,7 @@ void destroy() {
 
 	// Custom objects animate
 	mayowModelAnimate.destroy();
+	leonModelAnimate.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -584,7 +593,7 @@ bool processInput(bool continueApplication) {
 	if (enableCountSelected && glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS){
 		enableCountSelected = false;
 		modelSelected++;
-		if(modelSelected > 2)
+		if(modelSelected > 3)
 			modelSelected = 0;
 		if(modelSelected == 1)
 			fileName = "../animaciones/animation_dart_joints.txt";
@@ -670,6 +679,42 @@ bool processInput(bool continueApplication) {
 	else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		modelMatrixDart = glm::translate(modelMatrixDart, glm::vec3(0.02, 0.0, 0.0));
 
+	//Leon
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		modelMatrixLeon = glm::rotate(modelMatrixLeon, 0.02f, glm::vec3(0.0f, 1.0f, 0.0f));
+		//leonModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		modelMatrixLeon = glm::rotate(modelMatrixLeon, -0.02f, glm::vec3(0.0f, 1.0f, 0.0f));
+		//leonModelAnimate.setAnimationIndex(0);
+	}
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		modelMatrixLeon = glm::translate(modelMatrixLeon, glm::vec3(0.0f, 0.0f, 0.01f));
+		//leonModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		modelMatrixLeon = glm::translate(modelMatrixLeon, glm::vec3(0.0f, 0.0f, -0.01f));
+		//leonModelAnimate.setAnimationIndex(0);
+	}
+
+	//May
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		modelMatrixMayow = glm::rotate(modelMatrixMayow, 0.02f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mayowModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		modelMatrixMayow = glm::rotate(modelMatrixMayow, -0.02f, glm::vec3(0.0f, 1.0f, 0.0f));
+		mayowModelAnimate.setAnimationIndex(0);
+	}
+	if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0f, 0.0f, 0.01f));
+		mayowModelAnimate.setAnimationIndex(0);
+	}
+	else if (modelSelected == 3 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0.0f, 0.0f, -0.01f));
+		mayowModelAnimate.setAnimationIndex(0);
+	}
+
 	glfwPollEvents();
 	return continueApplication;
 }
@@ -689,6 +734,9 @@ void applicationLoop() {
 
 	modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(13.0f, 0.05f, -5.0f));
 	modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+
+	modelMatrixLeon = glm::translate(modelMatrixLeon, glm::vec3(13.0f, 0.05f, -8.0f));
+	modelMatrixLeon = glm::rotate(modelMatrixLeon, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 
 	// Variables to interpolation key frames
 	fileName = "../animaciones/animation_dart_joints.txt";
@@ -754,14 +802,15 @@ void applicationLoop() {
 		/*******************************************
 		 * Terrain Cesped
 		 *******************************************/
-		glm::mat4 modelCesped = glm::mat4(1.0);
-		modelCesped = glm::translate(modelCesped, glm::vec3(0.0, 0.0, 0.0));
-		modelCesped = glm::scale(modelCesped, glm::vec3(200.0, 0.001, 200.0));
+		//glm::mat4 modelCesped = glm::mat4(1.0);
+		//modelCesped = glm::translate(modelCesped, glm::vec3(0.0, 0.0, 0.0));
+		//modelCesped = glm::scale(modelCesped, glm::vec3(200.0, 0.001, 200.0));
 		// Se activa la textura del agua
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureCespedID);
 		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(80, 80)));
 		terrain.setPosition(glm::vec3(100, 0, 100));
+		//terrain.enableWireMode();
 		terrain.render();
 		shaderMulLighting.setVectorFloat2("scaleUV", glm::value_ptr(glm::vec2(0, 0)));
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -864,11 +913,43 @@ void applicationLoop() {
 		/*******************************************
 		 * Custom Anim objects obj
 		 *******************************************/
+		// May
+		glm::vec3 ejey = glm::normalize(terrain.getNormalTerrain(modelMatrixMayow[3][0],
+										modelMatrixMayow[3][2]));
+		glm::vec3 ejex = glm::normalize(glm::vec3(modelMatrixMayow[0]));
+		glm::vec3 ejez = glm::normalize(glm::cross(ejex, ejey));
+		ejex = glm::normalize(glm::cross(ejey, ejez));
+
+		modelMatrixMayow[0] = glm::vec4(ejex, 0.0f);
+		modelMatrixMayow[1] = glm::vec4(ejey, 0.0f);
+		modelMatrixMayow[2] = glm::vec4(ejez, 0.0f);
+
 		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
-		mayowModelAnimate.setAnimationIndex(0);
 		mayowModelAnimate.render(modelMatrixMayowBody);
+		mayowModelAnimate.setAnimationIndex(1);
+
+
+		//Leon
+		ejey = glm::normalize(terrain.getNormalTerrain(modelMatrixLeon[3][0],
+										modelMatrixLeon[3][2]));
+		ejex = glm::normalize(glm::vec3(modelMatrixLeon[0]));
+		ejez = glm::normalize(glm::cross(ejex, ejey));
+
+		ejex = glm::normalize(glm::cross(ejey, ejez));
+
+		modelMatrixLeon[0] = glm::vec4(ejex, 0.0f);
+		modelMatrixLeon[1] = glm::vec4(ejey, 0.0f);
+		modelMatrixLeon[2] = glm::vec4(ejez, 0.0f);
+
+		modelMatrixLeon[3][1] = terrain.getHeightTerrain(modelMatrixLeon[3][0], modelMatrixLeon[3][2]);
+
+		glm::mat4 modelMatrixLeonBody = glm::mat4(modelMatrixLeon);
+		modelMatrixLeonBody = glm::scale(modelMatrixLeonBody, glm::vec3(0.021, 0.021, 0.021));
+		//leonModelAnimate.render(modelMatrixLeonBody);
+		//leonModelAnimate.setAnimationIndex(0);
 
 		/*******************************************
 		 * Skybox

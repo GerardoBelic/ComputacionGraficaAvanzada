@@ -19,7 +19,7 @@ void ThirdPersonCamera::mouseMoveCamera(float xoffset, float yoffset, float dt){
     pitch += yoffset * cameraSpeed;
     // Calculate Angle Arround
     angleAroundTarget -= xoffset * cameraSpeed;
-    if(pitch > M_PI / 2)
+    if (pitch > M_PI / 2)
         pitch = M_PI / 2 - 0.01;
     if(pitch < -M_PI / 2)
         pitch = -M_PI / 2 + 0.01;

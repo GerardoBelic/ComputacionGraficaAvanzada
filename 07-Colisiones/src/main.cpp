@@ -170,6 +170,12 @@ std::vector<float> lamp2Orientation = {21.37 + 90, -65.0 + 90};
 double deltaTime;
 double currTime, lastTime;
 
+// Variables para salto
+bool isJump = false;
+float GRAVITY = 3.1;
+double tmv = 0.0;
+double startTimeJump = TimeManager::Instance().GetTime();
+
 // Colliders
 std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collidersOBB;
 std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> > collidersSBB;
@@ -792,6 +798,28 @@ bool processInput(bool continueApplication) {
 		return false;
 	}
 
+	static int frame = 0;
+	frame++;
+
+	if (glfwJoystickPresent(GLFW_JOYSTICK_1) && frame == 60)
+	{
+		frame = 0;
+		std::cout << "Esta conectado el jotstick 0" << std::endl;
+
+		int numberAxes, numberBotones;
+
+		const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numberAxes);
+		std::cout << "Numero de ejes: " << numberAxes << std::endl;
+		for (int i = 0; i < numberAxes; ++i)
+			std::cout << "\tAxis " << i << ": " << axes[i] << std::endl;
+
+		const unsigned char *buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numberBotones);
+		std::cout << "Numero de botones: " << numberBotones << std::endl;
+		for (int i = 0; i < numberBotones; ++i)
+			std::cout << "\tBoton " << i << ": " << buttons[i] << std::endl;
+
+	}
+
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
 		camera->mouseMoveCamera(offsetX, 0.0, deltaTime);
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
@@ -901,6 +929,14 @@ bool processInput(bool continueApplication) {
 	}else if (modelSelected == 2 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(0, 0, -0.02));
 		animationIndex = 0;
+	}
+
+	bool keySpaceStatus = glfwGetKey(window, GLFW_KEY_SPACE);
+	if (!isJump && keySpaceStatus)
+	{
+		isJump = true;
+		tmv = 0.0;
+		startTimeJump = currTime;
 	}
 
 	glfwPollEvents();
@@ -1244,7 +1280,15 @@ void applicationLoop() {
 		/*******************************************
 		 * Custom Anim objects obj
 		 *******************************************/
-		modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		//modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		modelMatrixMayow[3][1] = - tmv * tmv * GRAVITY + 3.0 * tmv + terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		tmv = currTime - startTimeJump;
+		if (modelMatrixMayow[3][1] < terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]))
+		{
+			isJump = false;
+			modelMatrixMayow[3][1] = terrain.getHeightTerrain(modelMatrixMayow[3][0], modelMatrixMayow[3][2]);
+		}
+
 		glm::mat4 modelMatrixMayowBody = glm::mat4(modelMatrixMayow);
 		modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 		mayowModelAnimate.setAnimationIndex(animationIndex);
