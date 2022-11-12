@@ -961,8 +961,8 @@ void applicationLoop() {
 		/*******************************************
 		 * Propiedades Spotlight
 		 *******************************************/
-		shaderMulLighting.setInt("spotLightCount", 1);
-		shaderTerrain.setInt("spotLightCount", 1);
+		shaderMulLighting.setInt("spotLightCount", 3);
+		shaderTerrain.setInt("spotLightCount", 3);
 
 		glm::vec3 heliPos = glm::vec3(modelMatrixHeli[3]);
 		shaderMulLighting.setVectorFloat3("spotLights[0].light.ambient", glm::value_ptr(glm::vec3(0.2, 0.16, 0.01)));

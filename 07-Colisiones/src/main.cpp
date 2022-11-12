@@ -801,23 +801,55 @@ bool processInput(bool continueApplication) {
 	static int frame = 0;
 	frame++;
 
-	if (glfwJoystickPresent(GLFW_JOYSTICK_1) && frame == 60)
+	int numberAxes, numberBotones;
+	const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numberAxes);
+	const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numberBotones);
+
+	bool joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
+
+	if (joystick && frame == 60)
 	{
 		frame = 0;
 		std::cout << "Esta conectado el jotstick 0" << std::endl;
 
-		int numberAxes, numberBotones;
-
-		const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numberAxes);
+		
 		std::cout << "Numero de ejes: " << numberAxes << std::endl;
 		for (int i = 0; i < numberAxes; ++i)
 			std::cout << "\tAxis " << i << ": " << axes[i] << std::endl;
 
-		const unsigned char *buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numberBotones);
+		
 		std::cout << "Numero de botones: " << numberBotones << std::endl;
 		for (int i = 0; i < numberBotones; ++i)
 			std::cout << "\tBoton " << i << ": " << buttons[i] << std::endl;
+	}
 
+	if (joystick && std::abs(axes[1]) > 0.2)
+	{
+		modelMatrixMayow = glm::translate(modelMatrixMayow, glm::vec3(-axes[1] * 0.05f, 0.0, 0.0));
+		animationIndex = 0;
+	}
+
+	if (joystick && std::abs(axes[0]) > 0.2)
+	{
+		modelMatrixMayow = glm::rotate(modelMatrixMayow, glm::radians(-axes[0] * 0.5f), glm::vec3(0.0, 1.0, 0.0));
+		animationIndex = 0;
+	}
+
+	if (joystick && std::abs(axes[2]) > 0.2)
+	{
+		camera->mouseMoveCamera(axes[2] * 0.4f, 0.0f, deltaTime);
+	}
+	if (joystick && std::abs(axes[3]) > 0.2)
+	{
+		camera->mouseMoveCamera(0.0f, axes[3] * 0.4f, deltaTime);
+	}
+
+	// Si presionamos A, saltamos
+	if (joystick && !isJump && buttons[1] == GLFW_PRESS)
+	{
+		isJump = true;
+		startTimeJump = currTime;
+		tmv = 0.0;
 	}
 
 	if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
@@ -1340,6 +1372,37 @@ void applicationLoop() {
 		aircraftCollider.c = glm::vec3(modelMatrixColliderAircraft[3]);
 		aircraftCollider.e = modelAircraft.getObb().e * glm::vec3(1.0, 1.0, 1.0);
 		addOrUpdateColliders(collidersOBB, "aircraft", aircraftCollider, modelMatrixAircraft);
+
+		// Collider de rock
+		glm::mat4 modelMatrixColliderRock = glm::mat4(matrixModelRock);
+		AbstractModel::SBB rockCollider;
+		modelMatrixColliderRock = glm::scale(modelMatrixColliderRock, glm::vec3(1.0));
+		modelMatrixColliderRock = glm::translate(modelMatrixColliderRock, modelRock.getSbb().c);
+		rockCollider.c = glm::vec3(modelMatrixColliderRock[3]);
+		rockCollider.ratio = modelRock.getSbb().ratio * 1.0;
+		addOrUpdateColliders(collidersSBB, "rock", rockCollider, matrixModelRock);
+
+		// Lambo collider
+		AbstractModel::OBB lamboCollider;
+		glm::mat4 modelMatrixColliderLambo = glm::mat4(modelMatrixLambo);
+		modelMatrixColliderLambo[3][1] = terrain.getHeightTerrain(modelMatrixColliderLambo[3][0], modelMatrixColliderLambo[3][2]);
+		lamboCollider.u = glm::quat_cast(modelMatrixColliderLambo);
+		modelMatrixColliderLambo = glm::scale(modelMatrixColliderLambo, glm::vec3(1.3));
+		modelMatrixColliderLambo = glm::translate(modelMatrixColliderLambo, modelLambo.getObb().c);
+		lamboCollider.c = glm::vec3(modelMatrixColliderLambo[3]);
+		lamboCollider.e = modelLambo.getObb().e * 1.3f;
+		addOrUpdateColliders(collidersOBB, "lambo", lamboCollider, modelMatrixLambo);
+
+		// Mayow collider
+		AbstractModel::OBB mayowCollider;
+		glm::mat4 modelMatrixColliderMayow = modelMatrixMayow;
+		modelMatrixColliderMayow = glm::rotate(modelMatrixColliderMayow, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
+		mayowCollider.u = glm::quat_cast(modelMatrixColliderMayow);
+		modelMatrixColliderMayow = glm::scale(modelMatrixColliderMayow, glm::vec3(0.021));
+		modelMatrixColliderMayow = glm::translate(modelMatrixColliderMayow, mayowModelAnimate.getObb().c);
+		mayowCollider.c = glm::vec3(modelMatrixColliderMayow[3]);
+		mayowCollider.e = mayowModelAnimate.getObb().e * 0.021f * 0.75f;
+		addOrUpdateColliders(collidersOBB, "mayow", mayowCollider, modelMatrixMayow);
 
 		// Lamps1 colliders
 		for (int i = 0; i < lamp1Position.size(); i++){
