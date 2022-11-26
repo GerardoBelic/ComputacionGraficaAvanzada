@@ -1459,7 +1459,16 @@ void applicationLoop() {
 
 			float t = 0.0f;
 			if (raySphereIntersect(origenRayo, targetRayo, rayDirection, std::get<0>(it->second), t))
-				std::cout << "Hay colision con: " << it->first << std::endl;
+				std::cout << "Hay colision del rayo con: " << it->first << std::endl;
+		}
+
+		for (auto it = collidersOBB.begin(); it != collidersOBB.end(); ++it)
+		{
+			if (it->first == "mayow")
+				continue;
+
+			if (rayOBBIntersect(origenRayo, targetRayo, std::get<0>(it->second)))
+				std::cout << "Hay colision del rayo con: " << it->first << std::endl;
 		}
 
 		// Test SBB vs SBB

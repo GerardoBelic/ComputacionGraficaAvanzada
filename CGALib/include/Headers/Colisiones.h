@@ -210,5 +210,88 @@ bool testOBBOBB(AbstractModel::OBB a, AbstractModel::OBB b){
 	return true;
 }
 
+bool testSLABPlane(float p, float v, float min, float max, float &tmin, float &tmax)
+{
+
+	if (std::abs(v) < 0.01f)
+	{
+		if (p >= min && p <= max)
+			return true;
+
+		return false;
+	}
+
+	float ood = 1.0f / v;
+
+	float t1 = (min - p) * ood;
+
+	float t2 = (max - p) * ood;
+
+	if (t1 > t2)
+		std::swap(t1, t2);
+
+	if (t1 > tmin)
+		tmin = t1;
+
+	if (t2 < tmax)
+		tmax = t2;
+
+	if (tmin > tmax)
+		return false;
+
+	return true;
+
+}
+
+bool intersectSegmentAABB(glm::vec3 origen, glm::vec3 target, AbstractModel::AABB aabb)
+{
+
+	float tmin = -FLT_MAX;
+	float tmax = FLT_MAX;
+
+	glm::vec3 d = glm::normalize(target - origen);
+
+	if (!testSLABPlane(origen.x, d.x, aabb.mins.x, aabb.maxs.x, tmin, tmax))
+		return false;
+
+	if (!testSLABPlane(origen.y, d.y, aabb.mins.y, aabb.maxs.y, tmin, tmax))
+		return false;
+
+	if (!testSLABPlane(origen.z, d.z, aabb.mins.z, aabb.maxs.z, tmin, tmax))
+		return false;
+
+	//std::cout << tmin << " " << tmax << std::endl;
+
+	// Esto es para detectar colision con May
+	//if (tmin >= 0.0f && tmax <= glm::distance(origen, target))
+	if (tmax >= 0.0f && tmax <= glm::distance(origen, target))
+	{
+		//std::cout << tmin << " " << tmax << std::endl;
+		return true;
+	}
+
+	return false;
+
+	// Si se llega aqui, hay colision entre el rayo y la caja
+	glm::vec3 pint = origen + d * tmin;
+
+}
+
+bool rayOBBIntersect(glm::vec3 origen, glm::vec3 target, AbstractModel::OBB obb)
+{
+
+	glm::quat qinv = glm::inverse(obb.u);
+	glm::vec3 origenAlineado = qinv * origen;
+	glm::vec3 targetAlineado = qinv * target;
+
+	AbstractModel::AABB aabb;
+	glm::vec3 nuevoOrigenCaja = qinv * obb.c;
+	aabb.maxs = nuevoOrigenCaja + obb.e;
+	aabb.mins = nuevoOrigenCaja - obb.e;
+
+	return intersectSegmentAABB(origenAlineado, targetAlineado, aabb);
+
+}
+
 
 #endif /* COLISIONES_H_ */
